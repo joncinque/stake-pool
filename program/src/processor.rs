@@ -1312,8 +1312,7 @@ impl Processor {
             return Err(ProgramError::AccountNotRentExempt);
         }
 
-        let remaining_lamports = validator_stake_account_info
-            .lamports()
+        let remaining_lamports = u64::from(validator_stake_info.active_stake_lamports)
             .checked_sub(lamports)
             .ok_or(ProgramError::InsufficientFunds)?;
         let required_lamports = minimum_stake_lamports(&meta, stake_minimum_delegation);
@@ -3020,19 +3019,34 @@ impl Processor {
             }
 
             match withdraw_source {
-                StakeWithdrawSource::Active | StakeWithdrawSource::Transient => {
-                    let remaining_lamports = stake_split_from
-                        .lamports()
-                        .saturating_sub(withdraw_lamports);
+                StakeWithdrawSource::Active => {
+                    let active_lamports = u64::from(validator_stake_info.active_stake_lamports);
+                    let remaining_lamports = active_lamports.saturating_sub(withdraw_lamports);
                     if remaining_lamports < required_lamports {
-                        msg!("Attempting to withdraw {} lamports from validator account with {} stake lamports, {} must remain", withdraw_lamports, stake_split_from.lamports(), required_lamports);
+                        msg!("Attempting to withdraw {} lamports from validator account with {} stake lamports, {} must remain", withdraw_lamports, active_lamports, required_lamports);
+                        return Err(StakePoolError::StakeLamportsNotEqualToMinimum.into());
+                    }
+                }
+                StakeWithdrawSource::Transient => {
+                    let transient_lamports =
+                        u64::from(validator_stake_info.transient_stake_lamports);
+                    let remaining_lamports = transient_lamports.saturating_sub(withdraw_lamports);
+                    if remaining_lamports < required_lamports {
+                        msg!("Attempting to withdraw {} lamports from transient validator account with {} stake lamports, {} must remain", withdraw_lamports, transient_lamports, required_lamports);
                         return Err(StakePoolError::StakeLamportsNotEqualToMinimum.into());
                     }
                 }
                 StakeWithdrawSource::ValidatorRemoval => {
+                    let active_lamports = u64::from(validator_stake_info.active_stake_lamports);
                     let split_from_lamports = stake_split_from.lamports();
-                    let upper_bound = split_from_lamports.saturating_add(lamports_per_pool_token);
-                    if withdraw_lamports < split_from_lamports || withdraw_lamports > upper_bound {
+                    if active_lamports != split_from_lamports {
+                        msg!("Attempting to remove a validator from the pool, but validator account has {} lamports instead of {} expected, update the pool to withdraw any unaccounted lamports and then re-attempt removal",
+                            split_from_lamports,
+                            active_lamports);
+                        return Err(StakePoolError::StakeListAndPoolOutOfDate.into());
+                    }
+                    let upper_bound = active_lamports.saturating_add(lamports_per_pool_token);
+                    if withdraw_lamports < active_lamports || withdraw_lamports > upper_bound {
                         msg!(
                             "Cannot withdraw a whole account worth {} lamports, \
                               must withdraw at least {} lamports worth of pool tokens \

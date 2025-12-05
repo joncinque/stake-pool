@@ -38,7 +38,7 @@ use {
     },
     solana_stake_interface as stake,
     solana_system_interface::{instruction as system_instruction, program as system_program},
-    spl_token_2022::{
+    spl_token_2022_interface::{
         check_spl_token_program_account,
         extension::{BaseStateWithExtensions, StateWithExtensions},
         native_mint,
@@ -574,7 +574,7 @@ impl Processor {
         authority: AccountInfo<'a>,
         amount: u64,
     ) -> Result<(), ProgramError> {
-        let ix = spl_token_2022::instruction::burn(
+        let ix = spl_token_2022_interface::instruction::burn(
             token_program.key,
             burn_account.key,
             mint.key,
@@ -601,7 +601,7 @@ impl Processor {
         let authority_signature_seeds = [stake_pool.as_ref(), authority_type, &[bump_seed]];
         let signers = &[&authority_signature_seeds[..]];
 
-        let ix = spl_token_2022::instruction::mint_to(
+        let ix = spl_token_2022_interface::instruction::mint_to(
             token_program.key,
             mint.key,
             destination.key,
@@ -624,7 +624,7 @@ impl Processor {
         amount: u64,
         decimals: u8,
     ) -> Result<(), ProgramError> {
-        let ix = spl_token_2022::instruction::transfer_checked(
+        let ix = spl_token_2022_interface::instruction::transfer_checked(
             token_program.key,
             source.key,
             mint.key,
@@ -642,7 +642,7 @@ impl Processor {
         destination: AccountInfo<'a>,
         amount: u64,
     ) -> Result<(), ProgramError> {
-        let ix = solana_program::system_instruction::transfer(source.key, destination.key, amount);
+        let ix = system_instruction::transfer(source.key, destination.key, amount);
         invoke(&ix, &[source, destination])
     }
 

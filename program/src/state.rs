@@ -20,7 +20,7 @@ use {
         stake::state::Lockup,
     },
     spl_pod::primitives::{PodU32, PodU64},
-    spl_token_2022::{
+    spl_token_2022_interface::{
         extension::{BaseStateWithExtensions, ExtensionType, StateWithExtensions},
         state::{Account, AccountState, Mint},
     },

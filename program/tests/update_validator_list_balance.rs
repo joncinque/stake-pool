@@ -15,7 +15,7 @@ use {
         state::{StakePool, StakeStatus, ValidatorList},
         MAX_VALIDATORS_TO_UPDATE, MINIMUM_RESERVE_LAMPORTS,
     },
-    spl_token::state::Mint,
+    spl_token_interface::state::Mint,
     std::num::NonZeroU32,
 };
 

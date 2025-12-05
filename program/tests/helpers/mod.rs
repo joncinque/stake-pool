@@ -21,9 +21,9 @@ use {
     },
     solana_stake_interface as stake,
     solana_system_interface::{instruction as system_instruction, program as system_program},
-    solana_vote_program::{
-        self, vote_instruction,
-        vote_state::{VoteInit, VoteState, VoteStateVersions},
+    solana_vote_interface::{
+        instruction as vote_instruction,
+        state::{VoteInit, VoteState, VoteStateVersions},
     },
     spl_stake_pool::{
         find_deposit_authority_program_address, find_ephemeral_stake_program_address,
@@ -35,7 +35,7 @@ use {
         state::{self, FeeType, FutureEpoch, StakePool, ValidatorList},
         MAX_VALIDATORS_TO_UPDATE, MINIMUM_RESERVE_LAMPORTS,
     },
-    spl_token_2022::{
+    spl_token_2022_interface::{
         extension::{ExtensionType, StateWithExtensionsOwned},
         native_mint,
         state::{Account, Mint},
@@ -94,7 +94,7 @@ pub async fn create_mint(
     decimals: u8,
     extension_types: &[ExtensionType],
 ) -> Result<(), TransportError> {
-    assert!(extension_types.is_empty() || program_id != &spl_token::id());
+    assert!(extension_types.is_empty() || program_id != &spl_token_interface::id());
     let rent = banks_client.get_rent().await.unwrap();
     let space = ExtensionType::try_calculate_account_len::<Mint>(extension_types).unwrap();
     let mint_rent = rent.minimum_balance(space);
@@ -2038,7 +2038,7 @@ impl Default for StakePoolAccounts {
             stake_pool,
             validator_list,
             reserve_stake,
-            token_program_id: spl_token::id(),
+            token_program_id: spl_token_interface::id(),
             pool_mint,
             pool_fee_account,
             pool_decimals: native_mint::DECIMALS,
@@ -2369,7 +2369,7 @@ pub fn add_vote_account_with_pubkey(
     let vote_account = SolanaAccount::create(
         ACCOUNT_RENT_EXEMPTION,
         bincode::serialize::<VoteStateVersions>(&vote_state).unwrap(),
-        solana_vote_program::id(),
+        solana_vote_interface::id(),
         false,
         Epoch::default(),
     );

@@ -126,7 +126,7 @@ async fn success_with_preferred_deposit() {
         deposit_stake,
         pool_token_account,
         _stake_lamports,
-    ) = setup(spl_token::id()).await;
+    ) = setup(spl_token_interface::id()).await;
 
     stake_pool_accounts
         .set_preferred_validator(
@@ -162,7 +162,7 @@ async fn fail_with_wrong_preferred_deposit() {
         deposit_stake,
         pool_token_account,
         _stake_lamports,
-    ) = setup(spl_token::id()).await;
+    ) = setup(spl_token_interface::id()).await;
 
     let preferred_validator = simple_add_validator_to_pool(
         &mut context.banks_client,
@@ -217,7 +217,7 @@ async fn success_with_referral_fee() {
         deposit_stake,
         pool_token_account,
         stake_lamports,
-    ) = setup(spl_token::id()).await;
+    ) = setup(spl_token_interface::id()).await;
 
     let referrer = Keypair::new();
     let referrer_token_account = Keypair::new();
@@ -251,7 +251,7 @@ async fn success_with_referral_fee() {
             &stake_pool_accounts.pool_fee_account.pubkey(),
             &referrer_token_account.pubkey(),
             &stake_pool_accounts.pool_mint.pubkey(),
-            &spl_token::id(),
+            &spl_token_interface::id(),
         ),
         Some(&context.payer.pubkey()),
     );
@@ -294,7 +294,7 @@ async fn fail_with_invalid_referrer() {
         deposit_stake,
         pool_token_account,
         _stake_lamports,
-    ) = setup(spl_token::id()).await;
+    ) = setup(spl_token_interface::id()).await;
 
     let invalid_token_account = Keypair::new();
 
@@ -312,7 +312,7 @@ async fn fail_with_invalid_referrer() {
             &stake_pool_accounts.pool_fee_account.pubkey(),
             &invalid_token_account.pubkey(),
             &stake_pool_accounts.pool_mint.pubkey(),
-            &spl_token::id(),
+            &spl_token_interface::id(),
         ),
         Some(&context.payer.pubkey()),
     );
